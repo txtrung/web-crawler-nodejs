@@ -1,6 +1,7 @@
 // ./book-scraper/pageScraper.js
 
 const axios = require('axios');
+const fs = require('fs');
 
 const scraperObject = {
     // url: process.argv[2],
@@ -11,7 +12,8 @@ const scraperObject = {
     apiStoreData: global.apiStoreData,
     productError: [],
     pageError: [],
-    async getItemData(page,browser){
+
+    async getItemData(page){
         let self = this;
 
         await page.waitForSelector('.showindex__parent');
@@ -25,19 +27,40 @@ const scraperObject = {
             try {
                 let dataObj = {};
 
-                let shortLink = "/"+link.split('/').slice(-2).join('/');
+                let shortLink = "/"+link.split('/').slice(-2).join('/')
+                    productId = link.split('?')[0].split('/').at(-1);
+                ;
+
+                let folderName = `public/${productId}`;
+                if (!fs.existsSync(folderName)) {
+                    fs.mkdirSync(folderName);
+                }
+
                 await page.click(`a[href="${shortLink}"]`);
                 await page.waitForSelector('.showalbumheader__main');
 
-                dataObj['image_url'] = await page.$eval('.showalbumheader__gallerycover img', img => img.src);
+                let productImagesEle = await page.$('.showalbumheader__gallerycover');
+                await productImagesEle.screenshot({
+                    path: `${folderName}/${productId}-main.jpg`
+                });
+                dataObj['image_url'] = `${folderName}/${productId}-main.jpg`;
+
+
+                console.log('adsasdasdasdasdasdasdasdasdasdasdasdasdasdas');
+
+
                 dataObj['name'] = await page.$eval('.showalbumheader__gallerydec h2 span', text => text.textContent);
                 dataObj['size_available'] = await page.$eval('.showalbumheader__gallerysubtitle', text => text.textContent.split('\n')[0]);
-                
-                let productImages = await page.$$eval('.image__imagewrap', (img,protocolValue) => {
-                    img = img.map(el => protocolValue+el.querySelector('img').getAttribute('data-src'));
-                    return img;
-                },self.protocol);
-                dataObj['other_image_url'] = productImages;
+
+                productImagesEle = await page.$$('.image__imagewrap');
+                let imagesDir = [];
+                for (let i = 0 ; i < productImagesEle.length ; i++) {
+                    imagesDir.push(`${folderName}/${productId}-${i}.jpg`);
+                    await productImagesEle[i].screenshot({
+                        path: `${folderName}/${productId}-${i}.jpg`
+                    });
+                }
+                dataObj['other_images_url'] = imagesDir;
 
                 resolve(dataObj);
             } catch (error) {
@@ -75,6 +98,7 @@ const scraperObject = {
 
         return currentPageData;
     },
+
     async scraper(browser){
         try {
             let self = this;

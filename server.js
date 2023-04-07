@@ -12,7 +12,7 @@ global.apiStoreData = "";
 global.apiLogin = "http://127.0.0.1:8000/api/login";
 global.apiToken = "Bearer ";
 
-const PORT = 3000;
+const PORT = 3131;
 const HOST = '127.0.0.1';
 
 router.get('/', function(req, res) {
@@ -30,8 +30,10 @@ router.post('/crawlerGo', (req,res) => {
     let browserInstance = browserObject.startBrowser();
 
     axios.post(global.apiLogin, {
-        email:'nodejscrawler@admin.com',
-        password:'123123123'
+        // email:'nodejscrawler@admin.com',
+        // password:'123123123'
+        email:'admin@gmail.com',
+        password:'admin123'
     })
         .then((res) => {
             console.log(`Status: ${res.status}`);
@@ -47,6 +49,9 @@ router.post('/crawlerGo', (req,res) => {
 })
 
 app.use("/", router);
+
+const publicDir = require('path').join(__dirname,'/public');
+app.use(express.static(publicDir)); 
 
 app.listen( PORT, function() {
     console.log(`Server is running on: ${HOST}:${PORT}`);
