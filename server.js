@@ -7,13 +7,15 @@ const app = express();
 app.use(bodyParser.urlencoded({extend: false}));
 app.use(express.json());
 
+const PORT = 3131;
+const HOST = '127.0.0.1';
+
 global.url_crawl = "";
 global.apiStoreData = "";
 global.apiLogin = "http://127.0.0.1:8000/api/login";
 global.apiToken = "Bearer ";
-
-const PORT = 3131;
-const HOST = '127.0.0.1';
+global.host = HOST;
+global.port = PORT;
 
 router.get('/', function(req, res) {
     res.status(200).send('Hello world');

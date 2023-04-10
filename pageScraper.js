@@ -31,9 +31,10 @@ const scraperObject = {
                     productId = link.split('?')[0].split('/').at(-1);
                 ;
 
-                let folderName = `public/${productId}`;
-                if (!fs.existsSync(folderName)) {
-                    fs.mkdirSync(folderName);
+                let serverImageLocation = `http://${global.host}:${global.port}/${productId}`;
+                let localImageLocation = `public/${productId}`
+                if (!fs.existsSync(localImageLocation)) {
+                    fs.mkdirSync(localImageLocation);
                 }
 
                 await page.click(`a[href="${shortLink}"]`);
@@ -41,23 +42,22 @@ const scraperObject = {
 
                 let productImagesEle = await page.$('.showalbumheader__gallerycover');
                 await productImagesEle.screenshot({
-                    path: `${folderName}/${productId}-main.jpg`
+                    path: `${localImageLocation}/${productId}-main.jpg`
                 });
-                dataObj['image_url'] = `${folderName}/${productId}-main.jpg`;
-
-
-                console.log('adsasdasdasdasdasdasdasdasdasdasdasdasdasdas');
-
+                dataObj['image_url'] = `${serverImageLocation}/${productId}-main.jpg`;
 
                 dataObj['name'] = await page.$eval('.showalbumheader__gallerydec h2 span', text => text.textContent);
                 dataObj['size_available'] = await page.$eval('.showalbumheader__gallerysubtitle', text => text.textContent.split('\n')[0]);
+                
+                await page.waitForTimeout(700);
 
                 productImagesEle = await page.$$('.image__imagewrap');
+                console.log(`this product ${shortLink} has: ${productImagesEle.length} images`);
                 let imagesDir = [];
                 for (let i = 0 ; i < productImagesEle.length ; i++) {
-                    imagesDir.push(`${folderName}/${productId}-${i}.jpg`);
+                    imagesDir.push(`${serverImageLocation}/${productId}-${i}.jpg`);
                     await productImagesEle[i].screenshot({
-                        path: `${folderName}/${productId}-${i}.jpg`
+                        path: `${localImageLocation}/${productId}-${i}.jpg`
                     });
                 }
                 dataObj['other_images_url'] = imagesDir;
